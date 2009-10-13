@@ -1,20 +1,34 @@
 = Rails Templates
 
+NOTE: this is very unfinished and very much doesn't work yet. Hopefully, i'll be finishing it up this week.
+
 == INFO
 
-So far, I've only written the "base" template, which contains:
+So far, I'm still working on the "base" template, which contains:
 
 * jquery (not the gem, just jquery)
-* lesscss
+* lesscss and more
+* will_paginate
 * cucumber
+* shoulda
+* factory_girl
+
+and will ask you if you want:
+
+* your option of reset.css, sens.css, or 960gs
+* jQuery tools
+* sprockets and sprockets-rails (soon to be my version which will allow multiple files to be accessed client-side)
+* hoptoad_notifier
+* authlogic and authlogic_generator
+* paperclip
 
 == USAGE
 
 Add this function, courtesy of Ryan Bates, to your bash profile.
 
-	function railsapp {
-		template=$1
-		appname=$2
-		shift 2
-		rails $appname -m http://github.com/amiel/rails-templates/raw/master/$template.rb $@
+	function cmapp {
+		appname=$1
+		shift
+		rails $appname -m http://github.com/amiel/rails-templates/raw/master/carnes_media.rb $@
 	}
+
