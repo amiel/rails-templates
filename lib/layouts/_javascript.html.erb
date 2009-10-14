@@ -1,0 +1,17 @@
+<%= javascript_include_tag 'jquery.js', 'base' %>
+<%= javascript_include_tag 'application' %>
+
+<% js_var :DEBUG, !Rails.env.production? %>
+<% js_var :authenticity_token, form_authenticity_token %>
+
+<%= yield :javascript %>
+
+<%- if @content_for_dom_ready or @content_for_in_javascript -%>
+	<script type="text/javascript">
+	//<![CDATA[
+		$(function() { <%= yield :dom_ready %> });
+		<%= yield :in_javascript %>
+	//]]>
+	</script>
+<% end %>
+
