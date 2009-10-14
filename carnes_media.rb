@@ -69,13 +69,17 @@ public/stylesheets
 	git :commit => "-a -m 'Initial commit'"
 
 
+
+
+puts "copying basic helper files"
+	# TODO: copy basic helper files
+
+	
+
+
 puts "setting up gems"
 	gem 'less'
 	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
-
-	gem 'cucumber'
-	gem "thoughtbot-shoulda", :lib => "shoulda", :source => "http://gems.github.com"
-	gem 'thoughtbot-factory_girl', :lib => 'factory_girl', :source => 'http://gems.github.com'
 
 
 	if options[:hoptoad] then
@@ -121,7 +125,9 @@ puts "setting up javascripts and stylesheets"
 puts "setting up test stuffs"
  	# TODO, run cucumber generator
 	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'authlogic/test_case'" if options[:authlogic]
+	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'shoulda'"
 
-
-puts "copying basic helper files"
-	# TODO: copy basic helper files
+	gem 'cucumber', :env => 'test'
+	gem 'mocha', :env => 'test'
+	gem "thoughtbot-shoulda", :lib => "shoulda", :source => "http://gems.github.com", :env => 'test'
+	gem 'thoughtbot-factory_girl', :lib => 'factory_girl', :source => 'http://gems.github.com', :env => 'test'
