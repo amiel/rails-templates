@@ -5,7 +5,7 @@ def ask_with_default(q, default)
 end
 
 def add_stylesheets_to_application_layout(*stylesheets)
-	gsub_file 'app/views/layouts/application.html.rb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
+	gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
 end
 
 def setup_960gs
