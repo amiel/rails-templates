@@ -13,9 +13,7 @@ def setup_960gs
 	run 'mkdir app/stylesheets/960gs'
 	run 'cp 960-grid-system/code/css/*.css app/stylesheets/960gs'
 	run 'rm -rf 960-grid-system'
-	add_stylesheets_to_application_layout '960gs/reset', '960gs/text', '960gs/960'
-		
-	# TODO add to application.html.erb
+	add_stylesheets_to_application_layout '960gs/reset', '960gs/960'
 end
 
 def setup_resetcss
@@ -25,7 +23,7 @@ end
 
 def setup_sencss
 	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/sen.css'
-	add_stylesheets_to_application_layout 'sen.css'
+	add_stylesheets_to_application_layout 'sen'
 end
 
 puts 'ok, some questions before we get started'
@@ -97,7 +95,7 @@ puts "setting up gems"
 	msg = "gems and plugins\n\n"
 	
 	gem 'will_paginate'
-	msg << "* will_paginate"
+	msg << "* will_paginate\n"
 	
 	gem 'less'
 	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
@@ -144,7 +142,7 @@ puts "setting up javascripts and stylesheets"
 	end
 
 	case options[:css_framework]
-	when /960gs/
+	when /960/
 		msg << "* 960gs\n"
 		setup_960gs
 	when /sen/
@@ -170,7 +168,7 @@ puts "setting up test libraries"
 	msg << "* require shoulda and mocha in test_helper\n"
 	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'shoulda'\nrequire 'mocha'"
 	
-	msg << "* add gems to test.rb"
+	msg << "* add gems to test.rb\n"
 	gem 'cucumber', :env => 'test'
 	gem 'mocha', :env => 'test'
 	gem "thoughtbot-shoulda", :lib => "shoulda", :source => "http://gems.github.com", :env => 'test'
