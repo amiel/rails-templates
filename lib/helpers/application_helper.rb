@@ -6,9 +6,8 @@ module ApplicationHelper
   end
   
 	def render_title
-    # @_title ||= yield :title
 		if @_title then
-			"#{t('site_name')} | #{@_title}"
+			"#{@_title} - #{t('site_name')}"
 		else
 			"#{t('site_name')} - #{t('slogan')}"
 		end

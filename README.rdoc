@@ -22,7 +22,7 @@ and will ask you if you want:
 * authlogic and authlogic_generator
 * paperclip
 
-== USAGE
+== TO INSTALL
 
 Add this function, courtesy of Ryan Bates, to your bash profile.
 
@@ -32,3 +32,10 @@ Add this function, courtesy of Ryan Bates, to your bash profile.
 		rails $appname -m http://github.com/amiel/rails-templates/raw/master/carnes_media.rb $@
 	}
 
+== USAGE
+
+TODO: explain these things
+* title
+* body_class
+* js_var
+* more...
