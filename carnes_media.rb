@@ -4,29 +4,35 @@ def ask_with_default(q, default)
 	response.blank? ? default : response
 end
 
+def add_stylesheets_to_application_layout(*stylesheets)
+	gsub_file 'app/views/layouts/application.html.rb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
+end
 
 def setup_960gs
 	run 'git clone git://github.com/davemerwin/960-grid-system.git'
 	run 'mkdir app/stylesheets/960gs'
 	run 'cp 960-grid-system/code/css/*.css app/stylesheets/960gs'
 	run 'rm -rf 960-grid-system'
-	
+	add_stylesheets_to_application_layout '960gs/reset', '960gs/text', '960gs/960'
+		
 	# TODO add to application.html.erb
 end
 
 def setup_resetcss
-	
+	run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/reset.css > app/stylesheets/reset.css'
+	add_stylesheets_to_application_layout 'reset'
 end
 
-def setup_senscss
-	
+def setup_sencss
+	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/sen.css'
+	add_stylesheets_to_application_layout 'sen.css'
 end
 
 puts 'ok, some questions before we get started'
 
 	options = {}
 
-	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sens, reset', 'reset')
+	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sen, reset', 'reset')
 	options[:jqtools] = yes?('would you like jQuery tools?')
 	options[:sprockets] = yes?('would you like sprockets?')
 	
@@ -89,6 +95,10 @@ puts "copying basic templates"
 
 puts "setting up gems"
 	msg = "gems and plugins\n\n"
+	
+	gem 'will_paginate'
+	msg << "* will_paginate"
+	
 	gem 'less'
 	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
 	msg << "* less and more\n"
@@ -137,9 +147,9 @@ puts "setting up javascripts and stylesheets"
 	when /960gs/
 		msg << "* 960gs\n"
 		setup_960gs
-	when /sens/
-		msg << "* senscss\n"
-		setup_senscss
+	when /sen/
+		msg << "* sencss\n"
+		setup_sencss
 	else # reset
 		msg << "* resetcss\n"
 		setup_resetcss
