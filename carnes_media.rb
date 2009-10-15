@@ -63,6 +63,7 @@ public/stylesheets
 
 		run 'touch tmp/.keep log/.keep vendor/.keep'
 		run 'rm public/index.html'
+		run 'rm public/images/rails.png'
 		run 'rm -f public/javascripts/*'
 	end
 
@@ -78,6 +79,7 @@ puts "copying basic templates"
 		run 'cp rails-templates/lib/helpers/* app/helpers'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
+		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
 	end
 	
@@ -110,9 +112,10 @@ end
 		gem 'authlogic'
 		plugin 'authlogic_generator', :git => 'git://github.com/masone/authlogic_generator.git'
 		
-		msg << "* authlogic and authlogic_generator"
+		msg << "* authlogic and authlogic_generator\n"
 	end
 
+	puts "Please enter your sudo password to install gems"
 	rake 'gems:install', :sudo => true
 
 	git :add => '.'
@@ -125,7 +128,7 @@ puts "setting up javascripts and stylesheets"
 	msg << "* jquery-latest\n"
 	msg << "* blank screen.less and print.less\n"
 	in_root do
-		run "curl -L http://jqueryjs.googlecode.com/files/jquery-latest.min.js > #{JS_PATH}/jquery.js"
+		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/jquery.js"
 		run "touch app/stylesheets/screen.less"
 		run "touch app/stylesheets/print.less"
 	end
@@ -167,3 +170,7 @@ puts "setting up test libraries"
 
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
+	
+
+
+puts ""
