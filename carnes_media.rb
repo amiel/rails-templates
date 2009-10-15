@@ -59,6 +59,7 @@ public/stylesheets
 	
 	in_root do
 		run 'echo "public/javascripts" >> .gitignore' if options[:sprockets]
+		run "mkdir -p #{JS_PATH}" if options[:sprockets] # it will be empty, but we'll be adding files soon enough
 
 		run 'touch tmp/.keep log/.keep vendor/.keep'
 		run 'rm public/index.html'
@@ -66,20 +67,29 @@ public/stylesheets
 	end
 
 	git :add => '.'
-	git :commit => "-a -m 'Initial commit'"
+	git :commit => '-a -m "Initial commit"'
 
 
 
 
-puts "copying basic helper files"
-	# TODO: copy basic helper files
-
+puts "copying basic templates"
+	in_root do
+		run 'git clone git://github.com/amiel/rails-templates.git'
+		run 'cp rails-templates/lib/helpers/* app/helpers'
+		run "cp rails-templates/lib/javascripts/* #{JS_PATH}"
+		run 'cp rails-templates/lib/layouts/* app/views/layouts'
+		run 'rm -rf rails-templates'
+	end
 	
+	git :add => '.'
+	git :commit => '-m"Add files from template lib"'
 
 
 puts "setting up gems"
+	msg = "gems and plugins\n\n"
 	gem 'less'
 	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
+	msg << "* less and more\n"
 
 
 	if options[:hoptoad] then
@@ -92,19 +102,28 @@ HoptoadNotifier.configure do |config|
 end
 			RUBY
 		end
+		
+		msg << "* hoptoad notifier\n"
 	end
 
 	if options[:authlogic] then
 		gem 'authlogic'
 		plugin 'authlogic_generator', :git => 'git://github.com/masone/authlogic_generator.git'
+		
+		msg << "* authlogic and authlogic_generator"
 	end
 
 	rake 'gems:install', :sudo => true
 
+	git :add => '.'
+	git :commit => "-m'#{msg}'"
 
 
 puts "setting up javascripts and stylesheets"
-
+	msg = "Add javascripts and stylesheets\n\n"
+	
+	msg << "* jquery-latest\n"
+	msg << "* blank screen.less and print.less\n"
 	in_root do
 		run "curl -L http://jqueryjs.googlecode.com/files/jquery-latest.min.js > #{JS_PATH}/jquery.js"
 		run "touch app/stylesheets/screen.less"
@@ -113,21 +132,38 @@ puts "setting up javascripts and stylesheets"
 
 	case options[:css_framework]
 	when /960gs/
+		msg << "* 960gs\n"
 		setup_960gs
 	when /sens/
+		msg << "* senscss\n"
 		setup_senscss
 	else # reset
+		msg << "* resetcss\n"
 		setup_resetcss
 	end
 
+	git :add => '.'
+	git :commit => "-m'#{msg}'"
 
 
-puts "setting up test stuffs"
- 	# TODO, run cucumber generator
-	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'authlogic/test_case'" if options[:authlogic]
-	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'shoulda'"
+puts "setting up test libraries"
+	msg = "setup test libraries\n\n"
 
+	if options[:authlogic] then
+		msg << "* require authlogic test helpers in test_helper\n"	
+		gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'authlogic/test_case'"
+	end
+	
+	msg << "* require shoulda and mocha in test_helper\n"
+	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'shoulda'\nrequire 'mocha'"
+	
+	msg << "* add gems to test.rb"
 	gem 'cucumber', :env => 'test'
 	gem 'mocha', :env => 'test'
 	gem "thoughtbot-shoulda", :lib => "shoulda", :source => "http://gems.github.com", :env => 'test'
 	gem 'thoughtbot-factory_girl', :lib => 'factory_girl', :source => 'http://gems.github.com', :env => 'test'
+	
+ 	# TODO, run cucumber generator
+
+	git :add => '.'
+	git :commit => "-m'#{msg}'"
