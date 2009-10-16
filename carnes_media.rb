@@ -98,8 +98,7 @@ puts "setting up gems"
 	msg << "* will_paginate\n"
 	
 	gem 'less'
-	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
-	msg << "* less and more\n"
+	msg << "* less css\n"
 
 
 	if options[:hoptoad] then
@@ -126,6 +125,11 @@ end
 	puts "Please enter your sudo password to install gems"
 	rake 'gems:install', :sudo => true
 
+	# install more plugin after gems have been installed because the plugin doesn't allow you to run rake without the gem installed
+	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
+	msg << "* more (less plugin for rails)\n"
+	
+
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
 
@@ -133,24 +137,25 @@ end
 puts "setting up javascripts and stylesheets"
 	msg = "Add javascripts and stylesheets\n\n"
 	
-	msg << "* jquery-latest\n"
-	msg << "* blank screen.less and print.less\n"
 	in_root do
 		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/jquery.js"
+		msg << "* jquery-latest\n"
+		
 		run "touch app/stylesheets/screen.less"
 		run "touch app/stylesheets/print.less"
+		msg << "* blank screen.less and print.less\n"
 	end
 
 	case options[:css_framework]
 	when /960/
-		msg << "* 960gs\n"
 		setup_960gs
+		msg << "* 960gs\n"
 	when /sen/
-		msg << "* sencss\n"
 		setup_sencss
+		msg << "* sencss\n"
 	else # reset
-		msg << "* resetcss\n"
 		setup_resetcss
+		msg << "* resetcss\n"
 	end
 
 	git :add => '.'
@@ -161,24 +166,32 @@ puts "setting up test libraries"
 	msg = "setup test libraries\n\n"
 
 	if options[:authlogic] then
-		msg << "* require authlogic test helpers in test_helper\n"	
 		gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'authlogic/test_case'"
+		msg << "* require authlogic test helpers in test_helper\n"	
 	end
 	
-	msg << "* require shoulda and mocha in test_helper\n"
 	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'shoulda'\nrequire 'mocha'"
+	msg << "* require shoulda and mocha in test_helper\n"
 	
-	msg << "* add gems to test.rb\n"
 	gem 'cucumber', :env => 'test'
 	gem 'mocha', :env => 'test'
 	gem "thoughtbot-shoulda", :lib => "shoulda", :source => "http://gems.github.com", :env => 'test'
 	gem 'thoughtbot-factory_girl', :lib => 'factory_girl', :source => 'http://gems.github.com', :env => 'test'
+	msg << "* add gems to test.rb\n"
 	
  	# TODO, run cucumber generator
 
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
 	
+
+puts "other misc changes"
+	msg = "A few other misc changes from the template\n\n"
+	
+	msg << "* time_zone\n"
+	# config.time_zone = 'UTC'
+
+  # config.i18n.default_locale = :en
 
 
 puts ""
