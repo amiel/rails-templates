@@ -22,6 +22,7 @@ end
 
 def setup_sencss
 	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/sen.less'
+	gsub_file 'app/stylesheets/sen.less', /@charset "utf-8";\s*/, ''
 	add_stylesheets_to_application_layout 'sen'
 end
 
@@ -200,7 +201,7 @@ puts "setting up test libraries"
 puts "other misc changes"
 	msg = "A few other misc changes from the template\n\n"
 	
-	generate :controller, options[:first_controller_name]
+	generate :controller, options[:first_controller_name], 'index'
 	route "map.root :controller => '#{options[:first_controller_name]}'"
 	msg << "* first controller #{options[:first_controller_name]}"
 	
@@ -211,11 +212,12 @@ puts "other misc changes"
   gsub_file 'config/environment.rb', /# (config.i18n.default_locale =) :\w+/, "\\1 :en"
 	msg << "* default locale\n"
 	
-	gsub_file 'config/locales/en.yml', /\s+hello:.*/, "\n\tsite_name: #{app_name.titleize}\n\tslogan: One awesomely cool site"
+	gsub_file 'config/locales/en.yml', /(\s+)hello:.*/, "\\1site_name: #{app_name.titleize}\\1slogan: One awesomely cool site"
 	msg << "* a couple of i18n strings that are used in application_helper\n"
 
 	if options[:sprockets] then
 		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
+		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/vendor"
 		route "SprocketsApplication.routes(map)"
 		msg << "* some basic sprockets setup\n"
 	end
