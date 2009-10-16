@@ -188,10 +188,14 @@ puts "setting up test libraries"
 puts "other misc changes"
 	msg = "A few other misc changes from the template\n\n"
 	
-	msg << "* time_zone\n"
-	# config.time_zone = 'UTC'
+	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 'UTC'"
+	msg << "* time zone\n"
+	
+  gsub_file 'config/environment.rb', /# (config.i18n.default_locale =) :\w+/, "\\1 :en"
+	msg << "* default locale\n"
 
-  # config.i18n.default_locale = :en
+	git :add => '.'
+	git :commit => "-m'#{msg}'"
 
 
 puts ""
