@@ -1,3 +1,4 @@
+app_name = File.basename(File.expand_path(@root))
 
 def ask_with_default(q, default)
 	response = ask("#{q} default: #{default}")
@@ -34,7 +35,7 @@ puts 'ok, some questions before we get started'
 	
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
 	
-	# options[:first_controller_name] = ask_with_default('What would you like to call your first base controller?', 'static')
+	options[:first_controller_name] = ask_with_default('What would you like to call your first controller?', 'static')
 	options[:authlogic] = yes?('would you like authlogic setup for authentication?')
 	options[:paperclip] = yes?('would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
@@ -120,6 +121,13 @@ end
 		msg << "* authlogic and authlogic_generator\n"
 	end
 
+
+	if options[:sprockets] then
+		gem "sprockets"
+		plugin 'sprockets-rails', :git => 'git://github.com/amiel/sprockets-rails.git'
+		msg << "* sprockets and sprockets-rails\n"
+	end
+
 	puts "Please enter your sudo password to install gems"
 	rake 'gems:install', :sudo => true
 
@@ -142,7 +150,7 @@ puts "setting up javascripts and stylesheets"
 
 		if options[:sprockets] then
 			file 'app/javascripts/application.js', "//= require <jquery>\n//= require \"base\"\n"
-			gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
+			msg << "* a basic application.js for sprockets\n"
 		end
 		
 		run "touch app/stylesheets/screen.less"
@@ -192,20 +200,32 @@ puts "setting up test libraries"
 puts "other misc changes"
 	msg = "A few other misc changes from the template\n\n"
 	
+	generate :controller, options[:first_controller_name]
+	route "map.root :controller => '#{options[:first_controller_name]}'"
+	msg << "* first controller #{options[:first_controller_name]}"
+	
 	time_zone = `rake time:zones:local|grep '\* UTC' -A 1|tail -1`.chomp
 	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 '#{time_zone}'"
 	msg << "* time zone: #{time_zone}\n"
 	
   gsub_file 'config/environment.rb', /# (config.i18n.default_locale =) :\w+/, "\\1 :en"
 	msg << "* default locale\n"
+	
+	gsub_file 'config/locales/en.yml', /\s+hello:.*/, "\n\tsite_name: #{app_name.titleize}\n\tslogan: One awesomely cool site"
+	msg << "* a couple of i18n strings that are used in application_helper\n"
 
-	# TODO i18n quickstart with slogan, etc
-	# TODO generate the base static controller
+	if options[:sprockets] then
+		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
+		route "SprocketsApplication.routes(map)"
+		msg << "* some basic sprockets setup\n"
+	end
+
 	# TODO generate authlogic codes
-	# TODO install sprockets route
 
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
 
 
 puts ""
+puts "1. Change site_name and slogan in config/locales/en.yml"
+puts "2. check your default_locale and time_zone"

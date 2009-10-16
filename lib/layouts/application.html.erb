@@ -12,13 +12,14 @@
 	<%= stylesheet_link_tag 'print', :media => 'print' %>
 
 	<%= yield :head %>
-	
+
 	<meta http-equiv="X-UA-Compatible" content="IE=7" />
 </head>
 <body class="<%= body_class %>">
 
 	<%= render 'layouts/flashes' %>
 
+	<%= yield %>
 	<%= render 'layouts/javascript' %>
 
 </body>
