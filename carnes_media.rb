@@ -203,7 +203,7 @@ puts "other misc changes"
 	
 	generate :controller, options[:first_controller_name], 'index'
 	route "map.root :controller => '#{options[:first_controller_name]}'"
-	msg << "* first controller #{options[:first_controller_name]}"
+	msg << "* first controller #{options[:first_controller_name]}\n"
 	
 	time_zone = `rake time:zones:local|grep '\* UTC' -A 1|tail -1`.chomp
 	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 '#{time_zone}'"
