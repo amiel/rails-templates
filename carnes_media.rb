@@ -5,24 +5,22 @@ def ask_with_default(q, default)
 end
 
 def add_stylesheets_to_application_layout(*stylesheets)
-	gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
+	gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('screen')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
 end
 
 def setup_960gs
-	run 'git clone git://github.com/davemerwin/960-grid-system.git'
-	run 'mkdir app/stylesheets/960gs'
-	run 'cp 960-grid-system/code/css/*.css app/stylesheets/960gs'
-	run 'rm -rf 960-grid-system'
-	add_stylesheets_to_application_layout '960gs/reset', '960gs/960'
+	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/reset.less'
+	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/960.css > app/stylesheets/960.less'
+	add_stylesheets_to_application_layout 'reset', '960'
 end
 
 def setup_resetcss
-	run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/reset.css > app/stylesheets/reset.css'
+	run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/reset.css > app/stylesheets/reset.less'
 	add_stylesheets_to_application_layout 'reset'
 end
 
 def setup_sencss
-	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/sen.css'
+	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/sen.less'
 	add_stylesheets_to_application_layout 'sen'
 end
 
@@ -188,11 +186,14 @@ puts "setting up test libraries"
 puts "other misc changes"
 	msg = "A few other misc changes from the template\n\n"
 	
-	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 'UTC'"
-	msg << "* time zone\n"
+	time_zone = `rake time:zones:local|grep '\* UTC' -A 1|tail -1`.chomp
+	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 '#{time_zone}'"
+	msg << "* time zone: #{time_zone}\n"
 	
   gsub_file 'config/environment.rb', /# (config.i18n.default_locale =) :\w+/, "\\1 :en"
 	msg << "* default locale\n"
+
+	# TODO i18n quickstart with slogan, etc
 
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
