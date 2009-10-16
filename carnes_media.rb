@@ -15,7 +15,7 @@ def setup_960gs
 end
 
 def setup_resetcss
-	run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/reset.css > app/stylesheets/reset.less'
+	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/reset.less'
 	add_stylesheets_to_application_layout 'reset'
 end
 
@@ -29,12 +29,12 @@ puts 'ok, some questions before we get started'
 	options = {}
 
 	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sen, reset', 'reset')
-	options[:jqtools] = yes?('would you like jQuery tools?')
+	# options[:jqtools] = yes?('would you like jQuery tools?')
 	options[:sprockets] = yes?('would you like sprockets?')
 	
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
 	
-	options[:first_controller_name] = ask_with_default('What would you like to call your first base controller?', 'static')
+	# options[:first_controller_name] = ask_with_default('What would you like to call your first base controller?', 'static')
 	options[:authlogic] = yes?('would you like authlogic setup for authentication?')
 	options[:paperclip] = yes?('would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
@@ -136,24 +136,30 @@ puts "setting up javascripts and stylesheets"
 	msg = "Add javascripts and stylesheets\n\n"
 	
 	in_root do
-		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/jquery.js"
+		run "mkdir #{JS_PATH}/vendor"
+		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/vendor/jquery.js"
 		msg << "* jquery-latest\n"
+
+		if options[:sprockets] then
+			file 'app/javascripts/application.js', "//= require <jquery>\n//= require \"base\"\n"
+			gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
+		end
 		
 		run "touch app/stylesheets/screen.less"
 		run "touch app/stylesheets/print.less"
 		msg << "* blank screen.less and print.less\n"
-	end
 
-	case options[:css_framework]
-	when /960/
-		setup_960gs
-		msg << "* 960gs\n"
-	when /sen/
-		setup_sencss
-		msg << "* sencss\n"
-	else # reset
-		setup_resetcss
-		msg << "* resetcss\n"
+		case options[:css_framework]
+		when /960/
+			setup_960gs
+			msg << "* 960gs\n"
+		when /sen/
+			setup_sencss
+			msg << "* sencss\n"
+		else # reset
+			setup_resetcss
+			msg << "* resetcss\n"
+		end
 	end
 
 	git :add => '.'
@@ -194,6 +200,9 @@ puts "other misc changes"
 	msg << "* default locale\n"
 
 	# TODO i18n quickstart with slogan, etc
+	# TODO generate the base static controller
+	# TODO generate authlogic codes
+	# TODO install sprockets route
 
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
