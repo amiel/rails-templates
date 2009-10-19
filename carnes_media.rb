@@ -31,6 +31,8 @@ puts 'ok, some questions before we get started'
 	options = {}
 
 	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sen, reset', 'reset')
+	options[:first_controller_name] = ask_with_default('What would you like to call your first controller?', 'home')
+	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
 	options[:sprockets] = yes?('would you like sprockets?')
@@ -40,12 +42,12 @@ puts 'ok, some questions before we get started'
 	# options[:capistrano] = yes?('Will you be deploying with capistrano?')
 	
 	options[:spreadhead] = yes?('would you like spreadhead for basic content management?')
-	options[:first_controller_name] = ask_with_default('What would you like to call your first controller?', 'home')
 	options[:authlogic] = yes?('would you like authlogic setup for authentication?')
 	options[:paperclip] = yes?('would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
 	options[:hoptoad_api_key] = ask('please enter your hoptoad api key (ok to leave blank)') if options[:hoptoad]
 	
+	options[:git_repos] = ask('If this project will be hosted by a central git repository, enter the repos here:')
 	y options
 
 	begin; puts "ABORT"; exit; end if no?('is this all ok?')
@@ -140,7 +142,7 @@ puts "setting up gems"
 
 	# these plugins make rake gems:install fail if their corresponding gem is not already installed
 	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
-	plugin 'sprockets-rails', :git => 'git://github.com/amiel/sprockets-rails.git'
+	plugin 'sprockets-rails', :git => 'git://github.com/amiel/sprockets-rails.git' if options[:sprockets]
 	msg << "* more (less plugin for rails)\n"
 	
 
@@ -284,22 +286,15 @@ end
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
 
-
+puts "\n\n\n"
+puts "Sorry, but... one more question..."
 if yes?('would you like to run migrations right now?') then
 	rake :'db:migrate'
 	
 	if options[:spreadhead] then
 		in_root do
-			home_page_text = <<-STRING
-				%q{
-					h1. Home page
-					
-					Here be the home page, go to "/pages":/pages to edit it.
-					
-					#{'You may need to "Sign Up":/signup for an account first.' if options[:authlogic]}}
-				}
-			STRING
-			run %{./script/runner "Page.create :title => 'Home', :published => true, :text => #{home_page_text}, :format => 'textile'"}
+			home_page_text = %{%Q{h1. Home page\\n\\nHere be the home page, go to "/pages":/pages to edit it.\\n\\n#{'You may need to "Sign Up":/signup for an account first.' if options[:authlogic]}}}
+			run %{./script/runner 'Page.create :title => "Home", :published => true, :text => #{home_page_text}, :formatting => "textile"'}
 		end
 	end
 	
@@ -308,6 +303,7 @@ if yes?('would you like to run migrations right now?') then
 	
 end
 
+git :remote => "add origin #{options[:git_repos]}" unless options[:git_repos].blank?
 
 puts "\n\n"
 puts "1. Change site_name and slogan in config/locales/en.yml"
