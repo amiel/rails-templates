@@ -272,6 +272,10 @@ end
 	if options[:spreadhead] then
 		generate :spreadhead
 		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead "home" %>'
+		
+		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : true
+		gsub_file 'config/initializers/spreadhead.rb', /controller.send(.*?)/, spreadhead_filter
+		
 		msg << "* spreadhead setup\n"
 	end
 
@@ -281,8 +285,33 @@ end
 	git :commit => "-m'#{msg}'"
 
 
+if yes?('would you like to run migrations right now?') then
+	rake :'db:migrate'
+	
+	if options[:spreadhead] then
+		in_root do
+			home_page_text = <<-STRING
+				%q{
+					h1. Home page
+					
+					Here be the home page, go to "/pages":/pages to edit it.
+					
+					#{'You may need to "Sign Up":/signup for an account first.' if options[:authlogic]}}
+				}
+			STRING
+			run %{./script/runner "Page.create :title => 'Home', :published => true, :text => #{home_page_text}, :format => 'textile'"}
+		end
+	end
+	
+	git :add => '.'
+	git :commit => '-m"initial migration"'
+	
+end
+
+
 puts "\n\n"
 puts "1. Change site_name and slogan in config/locales/en.yml"
 puts "2. check your default_locale and time_zone"
 puts "3. run db:migrate if you chose authlogic or spreadhead"
+puts "4. setup spreadhead filter at config/initializers/spreadhead.rb"
 puts "\n\n"
