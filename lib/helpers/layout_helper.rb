@@ -5,8 +5,9 @@ module LayoutHelper
   end
   
 	def render_title
-		if @_title then
-			"#{@_title} - #{t('site_name')}"
+		title = @_title || yield(:title)
+		if title then
+			"#{title} - #{t('site_name')}"
 		else
 			"#{t('site_name')} - #{t('slogan')}"
 		end

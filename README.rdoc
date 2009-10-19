@@ -47,8 +47,6 @@ TODO: explain these things
 * capistrano
 * instructions at end of template
 * authlogic generation
-* cucumber generate
 * jQuery tools
 * other handy jquery plugins (facebox? )
-* form builder
 * write more info on features in this doc
