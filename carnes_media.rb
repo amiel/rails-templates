@@ -35,18 +35,19 @@ puts 'ok, some questions before we get started'
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
-	options[:sprockets] = yes?('would you like sprockets?')
+	options[:sprockets] = yes?('Would you like sprockets?')
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
 	
 	options[:formtastic] = yes?('Would you like a nice form builder (formtastic)?')
-	# options[:capistrano] = yes?('Will you be deploying with capistrano?')
+	options[:capistrano] = yes?('Will you be deploying with capistrano?')
 	
-	options[:spreadhead] = yes?('would you like spreadhead for basic content management?')
-	options[:authlogic] = yes?('would you like authlogic setup for authentication?')
-	options[:paperclip] = yes?('would you like paperclip?')
+	options[:spreadhead] = yes?('Would you like spreadhead for basic content management?')
+	options[:authlogic] = yes?('Would you like authlogic setup for authentication?')
+	options[:paperclip] = yes?('Would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
 	options[:hoptoad_api_key] = ask('please enter your hoptoad api key (ok to leave blank)') if options[:hoptoad]
 	
+	# options[:passenger] = yes?('Would you like')
 	options[:git_repos] = ask('If this project will be hosted by a central git repository, enter the repos here:')
 	y options
 
@@ -226,6 +227,9 @@ puts "setting up test libraries"
 puts "other misc changes"
 	msg = "A few other misc changes from the template\n\n"
 	
+	capify! if options[:capistrano]
+	msg << "* capify!\n"
+	
 	generate :controller, options[:first_controller_name], 'index'
 	route "map.root :controller => '#{options[:first_controller_name]}'"
 	msg << "* first controller #{options[:first_controller_name]}\n"
@@ -281,8 +285,6 @@ end
 		msg << "* spreadhead setup\n"
 	end
 
-	# TODO generate authlogic codes
-
 	git :add => '.'
 	git :commit => "-m'#{msg}'"
 
@@ -292,6 +294,8 @@ if yes?('would you like to run migrations right now?') then
 	rake :'db:migrate'
 	
 	if options[:spreadhead] then
+		# it may be bad style to put db stuff here in the template, but it does help get a working app up quick.
+		
 		in_root do
 			home_page_text = %{%Q{h1. Home page\\n\\nHere be the home page, go to "/pages":/pages to edit it.\\n\\n#{'You may need to "Sign Up":/signup for an account first.' if options[:authlogic]}}}
 			run %{./script/runner 'Page.create :title => "Home", :published => true, :text => #{home_page_text}, :formatting => "textile"'}

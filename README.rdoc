@@ -44,9 +44,7 @@ TODO: explain these things
 
 
 == TODO
-* capistrano
 * instructions at end of template
-* authlogic generation
 * jQuery tools
 * other handy jquery plugins (facebox? )
 * write more info on features in this doc
