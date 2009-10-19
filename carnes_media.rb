@@ -33,9 +33,9 @@ puts 'ok, some questions before we get started'
 	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sen, reset', 'reset')
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	options[:sprockets] = yes?('would you like sprockets?')
-	
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
 	
+	# options[:capistrano] = yes?('Will you be deploying with capistrano?')
 	options[:first_controller_name] = ask_with_default('What would you like to call your first controller?', 'static')
 	options[:authlogic] = yes?('would you like authlogic setup for authentication?')
 	options[:paperclip] = yes?('would you like paperclip?')
