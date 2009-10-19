@@ -271,7 +271,7 @@ end
 	
 	if options[:spreadhead] then
 		generate :spreadhead
-		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead :home_page %>'
+		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead "home" %>'
 		msg << "* spreadhead setup\n"
 	end
 
