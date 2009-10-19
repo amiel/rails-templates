@@ -274,7 +274,7 @@ end
 		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead "home" %>'
 		
 		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : true
-		gsub_file 'config/initializers/spreadhead.rb', /controller.send(.*?)/, spreadhead_filter
+		gsub_file 'config/initializers/spreadhead.rb', /controller\.send\(:head, 403\)/, spreadhead_filter
 		
 		msg << "* spreadhead setup\n"
 	end
