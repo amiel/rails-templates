@@ -271,8 +271,9 @@ end
 		end
 		
 		add_stylesheets_to_application_layout 'formtastic', 'formtastic_changes'
+		initializer('formtastic.rb', 'Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true')
 		
-		msg << "* formtastic generator\n"
+		msg << "* formtastic setup\n"
 	end
 	
 	if options[:spreadhead] then
