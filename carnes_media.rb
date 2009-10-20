@@ -246,6 +246,7 @@ puts "other misc changes"
 
 	if options[:sprockets] then
 		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
+		gsub_file 'app/helpers/layout_helper.rb', /javascript(_include_tag)/, "sprockets\\1"
 		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/vendor"
 		route "SprocketsApplication.routes(map)"
 		msg << "* some basic sprockets setup\n"
