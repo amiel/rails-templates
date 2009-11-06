@@ -74,7 +74,7 @@ public/stylesheets
 	in_root do
 		run 'echo "public/javascripts" >> .gitignore' if options[:sprockets]
 		run "mkdir -p #{JS_PATH}" if options[:sprockets] # it will be empty, but we'll be adding files soon enough
-
+		
 		run 'touch tmp/.keep log/.keep vendor/.keep'
 		run 'rm public/index.html'
 		run 'rm public/images/rails.png'
@@ -168,6 +168,8 @@ puts "setting up javascripts and stylesheets"
 	
 	in_root do
 		run "mkdir #{JS_PATH}/vendor"
+		run "mkdir -p app/stylesheets/vendor"
+
 		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/vendor/jquery.js"
 		msg << "* jquery-latest\n"
 
