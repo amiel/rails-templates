@@ -8,25 +8,25 @@ end
 def add_stylesheets_to_application(*stylesheets)
 	# gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
 	stylesheets.each do |s|
-		run "echo \"@import \\\"vendor/_#{s}\\\";\" >> app/stylesheets/application.less"
+		run "echo \"@import \\\"#{s}\\\";\" >> app/stylesheets/application.less"
 	end
 end
 
 def setup_960gs
 	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
 	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/960.css > app/stylesheets/vendor/_960.less'
-	add_stylesheets_to_application 'reset', '960'
+	add_stylesheets_to_application 'vendor/_reset', 'vendor/_960'
 end
 
 def setup_resetcss
 	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
-	add_stylesheets_to_application 'reset'
+	add_stylesheets_to_application 'vendor/_reset'
 end
 
 def setup_sencss
 	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/vendor/_sen.less'
 	gsub_file 'app/stylesheets/sen.less', /@charset "utf-8";\s*/, ''
-	add_stylesheets_to_application 'sen'
+	add_stylesheets_to_application 'vendor/_sen'
 end
 
 puts 'ok, some questions before we get started'
@@ -196,7 +196,7 @@ puts "setting up javascripts and stylesheets"
 		
 		if options[:spreadhead] then
 			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/vendor/_spreadhead.less'
-			add_stylesheets_to_application 'spreadhead'
+			add_stylesheets_to_application 'vendor/_spreadhead'
 		end
 	end
 
@@ -276,7 +276,7 @@ end
 			run "mv public/stylesheets/formtastic_changes.css app/stylesheets/_formtastic_changes.less"
 		end
 		
-		add_stylesheets_to_application 'formtastic', 'formtastic_changes'
+		add_stylesheets_to_application 'vendor/_formtastic', '_formtastic_changes'
 		initializer('formtastic.rb', 'Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true')
 		
 		msg << "* formtastic setup\n"
