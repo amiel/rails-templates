@@ -6,6 +6,9 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
 	<title><%= render_title %></title>
+	<meta name="Description" content="<%= yield :description -%>" />
+	<meta name="Keywords" content="<%= yield :keywords -%>" />
+
 
 	<%= render 'layouts/unobtrusive_hack' %>
 	<%= stylesheet_link_tag 'application' %>

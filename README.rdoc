@@ -1,6 +1,6 @@
 = Rails Templates
 
-NOTE: this is very unfinished and very much doesn't work yet. Hopefully, i'll be finishing it up this week.
+NOTE: this is unfinished. Not all options are thoroughly tested.
 
 == INFO
 
@@ -16,8 +16,9 @@ So far, I'm still working on the "base" template, which contains:
 and will ask you if you want:
 
 * your option of reset.css, sens.css, or 960gs
-* jQuery tools
-* sprockets and sprockets-rails (soon to be my version which will allow multiple files to be accessed client-side)
+* jQuery tools (TODO)
+* a form builder (to be determined)
+* sprockets and sprockets-rails (my version of sprockets-rails http://github.com/amiel/sprockets-rails)
 * hoptoad_notifier
 * authlogic and authlogic_generator
 * paperclip
@@ -39,3 +40,11 @@ TODO: explain these things
 * body_class
 * js_var
 * more...
+
+
+
+== TODO
+* instructions at end of template
+* jQuery tools
+* other handy jquery plugins (facebox? )
+* write more info on features in this doc

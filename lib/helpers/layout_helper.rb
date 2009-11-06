@@ -1,13 +1,13 @@
-# Methods added to this helper will be available to all templates in the application.
-module ApplicationHelper
+module LayoutHelper
   
   def body_class
     "#{controller.controller_name} #{controller.controller_name}-#{controller.action_name}"
   end
   
 	def render_title
-		if @_title then
-			"#{@_title} - #{t('site_name')}"
+		title = @_title || @content_for_title
+		if title then
+			"#{title} - #{t('site_name')}"
 		else
 			"#{t('site_name')} - #{t('slogan')}"
 		end
