@@ -193,8 +193,8 @@ puts "setting up javascripts and stylesheets"
 		end
 		
 		if options[:spreadhead] then
-			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/spreadhead.less'
-			add_stylesheets_to_application_layout 'spreadhead'
+			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/vendor/spreadhead.less'
+			add_stylesheets_to_application 'spreadhead'
 		end
 	end
 
@@ -274,7 +274,7 @@ end
 			run "mv public/stylesheets/formtastic_changes.css app/stylesheets/formtastic_changes.less"
 		end
 		
-		add_stylesheets_to_application_layout 'formtastic', 'formtastic_changes'
+		add_stylesheets_to_application 'formtastic', 'formtastic_changes'
 		initializer('formtastic.rb', 'Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true')
 		
 		msg << "* formtastic setup\n"
