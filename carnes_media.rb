@@ -5,25 +5,27 @@ def ask_with_default(q, default)
 	response.blank? ? default : response
 end
 
-def add_stylesheets_to_application_layout(*stylesheets)
-	gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('screen')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
+def add_stylesheets_to_application(*stylesheets)
+	# gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
+	stylesheets.each do |s|
+		run "echo \"@import \\\"vendor/#{s}\\\"\"; >> app/stylesheets/application.less"
 end
 
 def setup_960gs
-	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/reset.less'
-	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/960.css > app/stylesheets/960.less'
-	add_stylesheets_to_application_layout 'reset', '960'
+	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
+	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/960.css > app/stylesheets/vendor/_960.less'
+	add_stylesheets_to_application 'reset', '960'
 end
 
 def setup_resetcss
-	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/reset.less'
-	add_stylesheets_to_application_layout 'reset'
+	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
+	add_stylesheets_to_application 'reset'
 end
 
 def setup_sencss
-	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/sen.less'
+	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/vendor/_sen.less'
 	gsub_file 'app/stylesheets/sen.less', /@charset "utf-8";\s*/, ''
-	add_stylesheets_to_application_layout 'sen'
+	add_stylesheets_to_application 'sen'
 end
 
 puts 'ok, some questions before we get started'
@@ -154,9 +156,9 @@ puts "setting up javascripts and stylesheets"
 			msg << "* a basic application.js for sprockets\n"
 		end
 		
-		run "touch app/stylesheets/screen.less"
+		run "touch app/stylesheets/application.less"
 		run "touch app/stylesheets/print.less"
-		msg << "* blank screen.less and print.less\n"
+		msg << "* blank application.less and print.less\n"
 
 		case options[:css_framework]
 		when /960/
