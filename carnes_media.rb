@@ -8,7 +8,7 @@ end
 def add_stylesheets_to_application(*stylesheets)
 	# gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
 	stylesheets.each do |s|
-		run "echo \"@import \\\"vendor/#{s}\\\"\"; >> app/stylesheets/application.less"
+		run "echo \"@import \\\"vendor/#{s}\\\";\" >> app/stylesheets/application.less"
 	end
 end
 
