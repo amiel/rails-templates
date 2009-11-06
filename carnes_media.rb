@@ -8,7 +8,7 @@ end
 def add_stylesheets_to_application(*stylesheets)
 	# gsub_file 'app/views/layouts/application.html.erb', /(stylesheet_link_tag)(.*)('application')/, "\\1\\2#{stylesheets.collect{|s| "'#{s}', " }}\\3"
 	stylesheets.each do |s|
-		run "echo \"@import \\\"vendor/#{s}\\\";\" >> app/stylesheets/application.less"
+		run "echo \"@import \\\"vendor/_#{s}\\\";\" >> app/stylesheets/application.less"
 	end
 end
 
@@ -195,7 +195,7 @@ puts "setting up javascripts and stylesheets"
 		end
 		
 		if options[:spreadhead] then
-			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/vendor/spreadhead.less'
+			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/vendor/_spreadhead.less'
 			add_stylesheets_to_application 'spreadhead'
 		end
 	end
@@ -272,8 +272,8 @@ end
 	if options[:formtastic] then
 		generate :formtastic
 		in_root do
-			run "mv public/stylesheets/formtastic.css app/stylesheets/formtastic.less"
-			run "mv public/stylesheets/formtastic_changes.css app/stylesheets/formtastic_changes.less"
+			run "mv public/stylesheets/formtastic.css app/stylesheets/vendor/_formtastic.less"
+			run "mv public/stylesheets/formtastic_changes.css app/stylesheets/_formtastic_changes.less"
 		end
 		
 		add_stylesheets_to_application 'formtastic', 'formtastic_changes'
