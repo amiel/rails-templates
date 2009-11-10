@@ -370,8 +370,17 @@ end
 git :remote => "add origin #{options[:git_repos]}" unless options[:git_repos].blank?
 
 puts "\n\n"
-puts "*. Change site_name and slogan in config/locales/en.yml"
-puts "*. check your default_locale and time_zone"
-puts "*. setup spreadhead filter at config/initializers/spreadhead.rb" if options[:spreadhead]
-puts "*. use this for has_attached_file options: :storage => :s3, :s3_credentials => \"\#{Rails.root}/config/s3.yml\", :path => \":attachment/:id/:style.:extension\", :bucket => \"projectname\#{Rails.env}\"" if options[:paperclip] and options[:heroku]
+puts "-"*76
+puts "* Change site_name and slogan in config/locales/en.yml"
+puts "* check your default_locale and time_zone"
+puts "* setup spreadhead filter at config/initializers/spreadhead.rb" if options[:spreadhead]
+if options[:paperclip] and options[:heroku]
+  puts "* use this for has_attached_file options:"
+  puts "    :storage => :s3,"
+  puts "    :s3_credentials => \"\#{Rails.root}/config/s3.yml\","
+  puts "    :path => \":attachment/:id/:style.:extension\","
+  puts "    :bucket => \"projectname\#{Rails.env}\""
+end
+
+puts "-"*76
 puts "\n\n"
