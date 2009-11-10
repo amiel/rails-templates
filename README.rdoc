@@ -48,3 +48,8 @@ TODO: explain these things
 * jQuery tools
 * other handy jquery plugins (facebox? )
 * write more info on features in this doc
+
+* password filtering
+* first user signup
+* no layout for xhr
+* fix paperclip
