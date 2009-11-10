@@ -75,7 +75,7 @@ public/stylesheets
 	
 	in_root do
 		run 'echo "public/javascripts" >> .gitignore' if options[:sprockets]
-		run "mkdir -p #{JS_PATH}" if options[:sprockets] # it will be empty, but we'll be adding files soon enough
+		run "mkdir -p #{JS_PATH}/lib"
 		
 		run 'touch tmp/.keep log/.keep vendor/.keep'
 		run 'rm public/index.html'
@@ -93,7 +93,7 @@ puts "copying basic templates"
 	in_root do
 		run 'git clone git://github.com/amiel/rails-templates.git'
 		run 'cp rails-templates/lib/helpers/* app/helpers'
-		run "cp rails-templates/lib/javascripts/* #{JS_PATH}"
+		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
 		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
@@ -193,7 +193,7 @@ puts "setting up javascripts and stylesheets"
 		msg << "* jquery-latest"
 
 		if options[:sprockets] then
-			file 'app/javascripts/application.js', "//= require <jquery>\n//= require \"base\"\n"
+			file 'app/javascripts/application.js', "//= require <jquery>\n//= require <base>\n"
 			msg << "* a basic application.js for sprockets"
 		end
 		
@@ -254,8 +254,8 @@ puts "other misc changes"
   environment 'config.action_mailer.delivery_method = :sendmail', :env => :development
 	msg << '* action_mailer uses sendmail for development'
 	
-	if options[:paperclip] and options[:heroku] do
-    file 'config/s3.yml', "development:\n  access_key_id: abc\n  secret_access_key: abc/efg\n \ntest:\n  access_key_id: abc\n  secret_access_key: abc/efg\n \nproduction:\n  access_key_id: abc\n  secret_access_key: abc/efg\n"
+	if options[:paperclip] and options[:heroku] then
+    file 'config/s3.yml', "development:\n  access_key_id: abc\n  secret_access_key: abc/efg\n\ntest:\n  access_key_id: abc\n  secret_access_key: abc/efg\n\nproduction:\n  access_key_id: abc\n  secret_access_key: abc/efg\n"
     msg << '* s3 config scaffold for use with paperclip'
 	end
 	
@@ -289,6 +289,7 @@ puts "other misc changes"
 		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
 		gsub_file 'app/helpers/layout_helper.rb', /javascript(_include_tag)/, "sprockets\\1"
 		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/vendor"
+		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/lib"
 		route "SprocketsApplication.routes(map)"
 		msg << "* some basic sprockets setup"
 	end
@@ -297,7 +298,7 @@ puts "other misc changes"
 		initializer('hoptoad.rb') do
 			<<-RUBY
 HoptoadNotifier.configure do |config|
-	config.api_key = '#{options[:hoptoad_api_key]}'
+  config.api_key = '#{options[:hoptoad_api_key]}'
 end
 			RUBY
 		end
@@ -322,11 +323,23 @@ end
 		generate :spreadhead
 		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead "home" %>'
 		
-		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : true
+		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : 'true'
 		gsub_file 'config/initializers/spreadhead.rb', /controller\.send\(:head, 403\)/, spreadhead_filter
 		
 		msg << "* spreadhead setup"
 	end
+
+  if options[:authlogic] then
+    gsub_file 'app/controllers/users_controller.rb', /require_no_user/, 'allow_only_first_user'
+    gsub_file 'app/controllers/users_controller.rb', /^end/, "  private\n  def allow_only_first_user\n    User.first ? require_user : require_no_user\n  end\nend"
+    
+    msg << '* allow only the first user to create an account'
+    
+    gsub_file 'app/controllers/application_controller.rb', /# filter_parameter_logging :password/, 'filter_parameter_logging :password, :password_confirmation'
+    msg << '* filter parameter logging for authlogic'
+  end
+
+
 
 	git :add => '.'
 	git :commit => "-m'#{msg.join("\n")}'"

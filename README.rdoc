@@ -52,5 +52,4 @@ TODO: explain these things
 * password filtering
 * first user signup
 * no layout for xhr
-** add PATH to development.rb for macports + paperclip
 * heroku
