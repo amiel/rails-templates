@@ -53,3 +53,5 @@ TODO: explain these things
 
 * no layout for xhr
 * more for heroku
+* heroku capistrano tasks and asset packing for deploy (http://casperfabricius.com/site/2009/09/20/manage-and-rollback-heroku-deployments-capistrano-style/)
+* google closure compiler to go with sprockets
