@@ -54,5 +54,6 @@ TODO: explain these things
 * no layout for xhr
 * more for heroku
 * heroku capistrano tasks and asset packing for deploy (http://casperfabricius.com/site/2009/09/20/manage-and-rollback-heroku-deployments-capistrano-style/)
+** concept is in Capfile and compiled_assets.rake, need to cleanup, etc
 * google closure compiler to go with sprockets
 * jquery from google ajax api for cdnness
