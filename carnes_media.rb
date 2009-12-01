@@ -25,7 +25,7 @@ end
 
 def setup_sencss
 	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/vendor/_sen.less'
-	gsub_file 'app/stylesheets/sen.less', /@charset "utf-8";\s*/, ''
+	gsub_file 'app/stylesheets/vendor/_sen.less', /@charset "utf-8";\s*/, ''
 	add_stylesheets_to_application 'vendor/_sen'
 end
 
@@ -38,21 +38,22 @@ puts 'ok, some questions before we get started'
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
-	options[:sprockets] = yes?('Would you like sprockets?')
+	options[:admin] = yes?('Would you like the slick admin interface setup? (this will include sprockets, formtastic, spreadhead and authlogic)')
+	
+	options[:sprockets] = options[:admin] || yes?('Would you like sprockets?')
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
 	
-	options[:formtastic] = yes?('Would you like a nice form builder (formtastic)?')
+	options[:formtastic] = options[:admin] || yes?('Would you like a nice form builder (formtastic)?')
 	
 	options[:heroku] = yes?('Will you be deploying to heroku?')
 	options[:capistrano] = options[:heroku] ? false : yes?('Will you be deploying with capistrano?')
 	
-	options[:spreadhead] = yes?('Would you like spreadhead for basic content management?')
-	options[:authlogic] = yes?('Would you like authlogic setup for authentication?')
+	options[:spreadhead] = options[:admin] || yes?('Would you like spreadhead for basic content management?')
+	options[:authlogic] = options[:admin] || yes?('Would you like authlogic setup for authentication?')
 	options[:paperclip] = yes?('Would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
 	options[:hoptoad_api_key] = ask('please enter your hoptoad api key (ok to leave blank)') if options[:hoptoad]
 	
-	# options[:passenger] = yes?('Would you like')
 	options[:git_repos] = ask('If this project will be hosted by a central git repository, enter the repos here:')
 	y options
 
@@ -74,7 +75,6 @@ public/stylesheets
 	end
 	
 	in_root do
-		run 'echo "public/javascripts" >> .gitignore' if options[:sprockets]
 		run "mkdir -p #{JS_PATH}/lib"
 		
 		run 'touch tmp/.keep log/.keep vendor/.keep'
@@ -95,6 +95,8 @@ puts "copying basic templates"
 		run 'cp rails-templates/lib/helpers/* app/helpers'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
+		run 'rm app/views/layouts/admin.html.erb' unless options[:admin]
+		run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
 		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
 	end
@@ -118,7 +120,7 @@ puts "setting up gems"
 
 	if options[:hoptoad] then
 		plugin 'hoptoad_notifier', :git => 'git://github.com/thoughtbot/hoptoad_notifier.git'
-		msg << "* hoptoad notifier\n"
+		msg << "* hoptoad notifier"
 	end
 	
 	if options[:paperclip] then
@@ -158,7 +160,7 @@ puts "setting up gems"
 
   file '.gems', gems.join("\n") if options[:heroku]
   
-  if system('rake gems|grep "\[ \]"') then
+  if system('rake gems|grep "\[ \]"') then # if there are gems that haven't been installed
   	puts "Please enter your sudo password to install gems"
   	rake 'gems:install', :sudo => true
 	end
@@ -189,11 +191,10 @@ puts "setting up javascripts and stylesheets"
 		run "mkdir #{JS_PATH}/vendor"
 		run "mkdir -p app/stylesheets/vendor"
 
-		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/vendor/jquery.js"
-		msg << "* jquery-latest"
+		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > public/javascripts/jquery.js" # for local
 
 		if options[:sprockets] then
-			file 'app/javascripts/application.js', "//= require <jquery>\n//= require <base>\n"
+			file 'app/javascripts/application.js', "//= require <base>\n"
 			msg << "* a basic application.js for sprockets"
 		end
 		
@@ -284,6 +285,11 @@ puts "other misc changes"
 	
 	gsub_file 'config/locales/en.yml', /(\s+)hello:.*/, "\\1site_name: #{app_name.titleize}\\1slogan: One awesomely cool site"
 	msg << "* a couple of i18n strings that are used in application_helper"
+
+  if options[:admin] then
+    gsub_file 'app/views/layouts/_javascript.html.erb', /(google :jquery)/, '\\1, :jqueryui'
+    msg << '* foo'
+  end
 
 	if options[:sprockets] then
 		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
