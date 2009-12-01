@@ -25,7 +25,7 @@ end
 
 def setup_sencss
 	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/vendor/_sen.less'
-	gsub_file 'app/stylesheets/sen.less', /@charset "utf-8";\s*/, ''
+	gsub_file 'app/stylesheets/vendor/_sen.less', /@charset "utf-8";\s*/, ''
 	add_stylesheets_to_application 'vendor/_sen'
 end
 
@@ -38,19 +38,22 @@ puts 'ok, some questions before we get started'
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
-	options[:sprockets] = yes?('Would you like sprockets?')
+	options[:admin] = yes?('Would you like the slick admin interface setup? (this will include sprockets, formtastic, spreadhead and authlogic)')
+	
+	options[:sprockets] = options[:admin] || yes?('Would you like sprockets?')
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
 	
-	options[:formtastic] = yes?('Would you like a nice form builder (formtastic)?')
-	options[:capistrano] = yes?('Will you be deploying with capistrano?')
+	options[:formtastic] = options[:admin] || yes?('Would you like a nice form builder (formtastic)?')
 	
-	options[:spreadhead] = yes?('Would you like spreadhead for basic content management?')
-	options[:authlogic] = yes?('Would you like authlogic setup for authentication?')
+	options[:heroku] = yes?('Will you be deploying to heroku?')
+	options[:capistrano] = options[:heroku] ? false : yes?('Will you be deploying with capistrano?')
+	
+	options[:spreadhead] = options[:admin] || yes?('Would you like spreadhead for basic content management?')
+	options[:authlogic] = options[:admin] || yes?('Would you like authlogic setup for authentication?')
 	options[:paperclip] = yes?('Would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
 	options[:hoptoad_api_key] = ask('please enter your hoptoad api key (ok to leave blank)') if options[:hoptoad]
 	
-	# options[:passenger] = yes?('Would you like')
 	options[:git_repos] = ask('If this project will be hosted by a central git repository, enter the repos here:')
 	y options
 
@@ -72,8 +75,7 @@ public/stylesheets
 	end
 	
 	in_root do
-		run 'echo "public/javascripts" >> .gitignore' if options[:sprockets]
-		run "mkdir -p #{JS_PATH}" if options[:sprockets] # it will be empty, but we'll be adding files soon enough
+		run "mkdir -p #{JS_PATH}/lib"
 		
 		run 'touch tmp/.keep log/.keep vendor/.keep'
 		run 'rm public/index.html'
@@ -91,8 +93,10 @@ puts "copying basic templates"
 	in_root do
 		run 'git clone git://github.com/amiel/rails-templates.git'
 		run 'cp rails-templates/lib/helpers/* app/helpers'
-		run "cp rails-templates/lib/javascripts/* #{JS_PATH}"
+		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
+		run 'rm app/views/layouts/admin.html.erb' unless options[:admin]
+		run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
 		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
 	end
@@ -102,47 +106,64 @@ puts "copying basic templates"
 
 
 puts "setting up gems"
-	msg = "gems and plugins\n\n"
+	msg = ["gems and plugins\n"]
+	gems = []
 	
+	gems << 'will_paginate'
 	gem 'will_paginate'
-	msg << "* will_paginate\n"
+	msg << "* will_paginate"
 	
+	gems << 'less'
 	gem 'less'
-	msg << "* less css\n"
+	msg << "* less css"
 
 
 	if options[:hoptoad] then
 		plugin 'hoptoad_notifier', :git => 'git://github.com/thoughtbot/hoptoad_notifier.git'
-		msg << "* hoptoad notifier\n"
+		msg << "* hoptoad notifier"
 	end
+	
+	if options[:paperclip] then
+	  gems << 'paperclip'
+	  gem 'paperclip'
+	  msg << "* paperclip"
+  end
 
 	if options[:authlogic] then
+	  gems << 'authlogic'
 		gem 'authlogic'
 		plugin 'authlogic_generator', :git => 'git://github.com/masone/authlogic_generator.git'
 		
-		msg << "* authlogic and authlogic_generator\n"
+		msg << "* authlogic and authlogic_generator"
 	end
 	
 	if options[:formtastic] then
+	  gems << 'justinfrench-formtastic --source=http://gems.github.com'
 		gem "justinfrench-formtastic", :lib => 'formtastic', :source => 'http://gems.github.com'
 		plugin 'validation_reflection', :git => 'git://github.com/redinger/validation_reflection.git'
 		
-		msg << "* formtastic and validation_reflection\n"
+		msg << "* formtastic and validation_reflection"
 	end
 
 	if options[:sprockets] then
+	  gems << 'sprockets'
 		gem "sprockets"
-		msg << "* sprockets and sprockets-rails\n"
+		msg << "* sprockets and sprockets-rails"
 	end
 	
 	if options[:spreadhead] then
+	  gems << 'jeffrafter-spreadhead --source=http://gems.github.com'
 		gem "jeffrafter-spreadhead", :lib => 'spreadhead', :source => 'http://gems.github.com'
 		
-		msg << "* spreadhead\n"
+		msg << "* spreadhead"
 	end
 
-	puts "Please enter your sudo password to install gems"
-	rake 'gems:install', :sudo => true
+  file '.gems', gems.join("\n") if options[:heroku]
+  
+  if system('rake gems|grep "\[ \]"') then # if there are gems that haven't been installed
+  	puts "Please enter your sudo password to install gems"
+  	rake 'gems:install', :sudo => true
+	end
 
 	# these plugins make rake gems:install fail if their corresponding gem is not already installed
 	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
@@ -151,7 +172,7 @@ puts "setting up gems"
 	
 
 	git :add => '.'
-	git :commit => "-m'#{msg}'"
+	git :commit => "-m'#{msg.join("\n")}'"
 
 
 if options[:authlogic]
@@ -164,34 +185,33 @@ if options[:authlogic]
 end
 
 puts "setting up javascripts and stylesheets"
-	msg = "Add javascripts and stylesheets\n\n"
+	msg = ["Add javascripts and stylesheets\n"]
 	
 	in_root do
 		run "mkdir #{JS_PATH}/vendor"
 		run "mkdir -p app/stylesheets/vendor"
 
-		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > #{JS_PATH}/vendor/jquery.js"
-		msg << "* jquery-latest\n"
+		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > public/javascripts/jquery.js" # for local
 
 		if options[:sprockets] then
-			file 'app/javascripts/application.js', "//= require <jquery>\n//= require \"base\"\n"
-			msg << "* a basic application.js for sprockets\n"
+			file 'app/javascripts/application.js', "//= require <base>\n"
+			msg << "* a basic application.js for sprockets"
 		end
 		
 		run "touch app/stylesheets/application.less"
 		run "touch app/stylesheets/print.less"
-		msg << "* blank application.less and print.less\n"
+		msg << "* blank application.less and print.less"
 
 		case options[:css_framework]
 		when /960/
 			setup_960gs
-			msg << "* 960gs\n"
+			msg << "* 960gs"
 		when /sen/
 			setup_sencss
-			msg << "* sencss\n"
+			msg << "* sencss"
 		else # reset
 			setup_resetcss
-			msg << "* resetcss\n"
+			msg << "* resetcss"
 		end
 		
 		if options[:spreadhead] then
@@ -201,72 +221,95 @@ puts "setting up javascripts and stylesheets"
 	end
 
 	git :add => '.'
-	git :commit => "-m'#{msg}'"
+	git :commit => "-m'#{msg.join("\n")}'"
 
 
 puts "setting up test libraries"
-	msg = "setup test libraries\n\n"
+	msg = ["setup test libraries\n"]
 
 	if options[:authlogic] then
 		gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'authlogic/test_case'"
-		msg << "* require authlogic test helpers in test_helper\n"	
+		msg << "* require authlogic test helpers in test_helper"	
 	end
 	
 	gsub_file 'test/test_helper.rb', /(require 'test_help')/, "\\1\nrequire 'shoulda'\nrequire 'mocha'"
-	msg << "* require shoulda and mocha in test_helper\n"
+	msg << "* require shoulda and mocha in test_helper"
 	
 	gem 'cucumber', :env => 'test'
 	gem 'mocha', :env => 'test'
 	gem "thoughtbot-shoulda", :lib => "shoulda", :source => "http://gems.github.com", :env => 'test'
 	gem 'thoughtbot-factory_girl', :lib => 'factory_girl', :source => 'http://gems.github.com', :env => 'test'
-	msg << "* add gems to test.rb\n"
+	msg << "* add gems to test.rb"
 
 	# this will fail if the cucumber gem is not already installed. thats fine though
 	generate :cucumber, '--testunit'
-	msg << "* generate cucumber\n"
+	msg << "* generate cucumber"
 
 	git :add => '.'
-	git :commit => "-m'#{msg}'"
+	git :commit => "-m'#{msg.join("\n")}'"
 	
 
 puts "other misc changes"
-	msg = "A few other misc changes from the template\n\n"
+	msg = ["A few other misc changes from the template\n"]
 	
-	capify! if options[:capistrano]
-	msg << "* capify!\n"
+  environment 'config.action_mailer.delivery_method = :sendmail', :env => :development
+	msg << '* action_mailer uses sendmail for development'
+	
+	if options[:paperclip] and options[:heroku] then
+    file 'config/s3.yml', "development:\n  access_key_id: abc\n  secret_access_key: abc/efg\n\ntest:\n  access_key_id: abc\n  secret_access_key: abc/efg\n\nproduction:\n  access_key_id: abc\n  secret_access_key: abc/efg\n"
+    msg << '* s3 config scaffold for use with paperclip'
+	end
+	
+
+	
+	if options[:paperclip] then
+    environment %q(ENV['PATH'] = "#{ENV['PATH']}:/opt/local/bin" # for macports), :env => :development
+    msg << '* setup PATH for macports to give paperclip access to identify and convert'
+  end
+	
+	if options[:capistrano] then
+  	capify!
+  	msg << "* capify!"
+	end
 	
 	generate :controller, options[:first_controller_name], 'index'
 	route "map.root :controller => '#{options[:first_controller_name]}'"
-	msg << "* first controller #{options[:first_controller_name]}\n"
+	msg << "* first controller #{options[:first_controller_name]}"
 	
 	time_zone = `rake time:zones:local|grep '\* UTC' -A 1|tail -1`.chomp
 	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 '#{time_zone}'"
-	msg << "* time zone: #{time_zone}\n"
+	msg << "* time zone: #{time_zone}"
 	
   gsub_file 'config/environment.rb', /# (config.i18n.default_locale =) :\w+/, "\\1 :en"
-	msg << "* default locale\n"
+	msg << "* default locale"
 	
 	gsub_file 'config/locales/en.yml', /(\s+)hello:.*/, "\\1site_name: #{app_name.titleize}\\1slogan: One awesomely cool site"
-	msg << "* a couple of i18n strings that are used in application_helper\n"
+	msg << "* a couple of i18n strings that are used in application_helper"
+
+  if options[:admin] then
+    gsub_file 'app/views/layouts/_javascript.html.erb', /(google :jquery)/, '\\1, :jqueryui'
+    msg << '* foo'
+  end
 
 	if options[:sprockets] then
 		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
 		gsub_file 'app/helpers/layout_helper.rb', /javascript(_include_tag)/, "sprockets\\1"
 		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/vendor"
+		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/lib"
 		route "SprocketsApplication.routes(map)"
-		msg << "* some basic sprockets setup\n"
+		msg << "* some basic sprockets setup"
 	end
 	
 	if options[:hoptoad] then
 		initializer('hoptoad.rb') do
 			<<-RUBY
 HoptoadNotifier.configure do |config|
-	config.api_key = '#{options[:hoptoad_api_key]}'
+  config.api_key = '#{options[:hoptoad_api_key]}'
 end
 			RUBY
 		end
 
-		msg << "* hoptoad notifier api_key\n"
+		msg << "* hoptoad notifier api_key"
 	end
 	
 	if options[:formtastic] then
@@ -279,21 +322,37 @@ end
 		add_stylesheets_to_application 'vendor/_formtastic', '_formtastic_changes'
 		initializer('formtastic.rb', 'Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true')
 		
-		msg << "* formtastic setup\n"
+		msg << "* formtastic setup"
 	end
 	
 	if options[:spreadhead] then
 		generate :spreadhead
 		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead "home" %>'
 		
-		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : true
+		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : 'true'
 		gsub_file 'config/initializers/spreadhead.rb', /controller\.send\(:head, 403\)/, spreadhead_filter
 		
-		msg << "* spreadhead setup\n"
+		msg << "* spreadhead setup"
 	end
 
+  if options[:authlogic] then
+    gsub_file 'app/controllers/users_controller.rb', /require_no_user/, 'allow_only_first_user'
+    gsub_file 'app/controllers/users_controller.rb', /^end/, "  private\n  def allow_only_first_user\n    User.first ? require_user : require_no_user\n  end\nend"
+    
+    msg << '* allow only the first user to create an account'
+    
+    gsub_file 'app/controllers/application_controller.rb', /# filter_parameter_logging :password/, 'filter_parameter_logging :password, :password_confirmation'
+    msg << '* filter parameter logging for authlogic'
+  end
+
+
+
 	git :add => '.'
-	git :commit => "-m'#{msg}'"
+	git :commit => "-m'#{msg.join("\n")}'"
+
+
+
+
 
 puts "\n\n\n"
 puts "Sorry, but... one more question..."
@@ -317,8 +376,17 @@ end
 git :remote => "add origin #{options[:git_repos]}" unless options[:git_repos].blank?
 
 puts "\n\n"
-puts "1. Change site_name and slogan in config/locales/en.yml"
-puts "2. check your default_locale and time_zone"
-puts "3. run db:migrate if you chose authlogic or spreadhead"
-puts "4. setup spreadhead filter at config/initializers/spreadhead.rb"
+puts "-"*76
+puts "* Change site_name and slogan in config/locales/en.yml"
+puts "* check your default_locale and time_zone"
+puts "* setup spreadhead filter at config/initializers/spreadhead.rb" if options[:spreadhead]
+if options[:paperclip] and options[:heroku]
+  puts "* use this for has_attached_file options:"
+  puts "    :storage => :s3,"
+  puts "    :s3_credentials => \"\#{Rails.root}/config/s3.yml\","
+  puts "    :path => \":attachment/:id/:style.:extension\","
+  puts "    :bucket => \"projectname\#{Rails.env}\""
+end
+
+puts "-"*76
 puts "\n\n"
