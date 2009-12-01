@@ -15,13 +15,13 @@ module JavascriptHelper
     js_var :I18n, I18n.backend.send(:translations)[I18n.locale.to_sym][:js]
   end
 
-  def include_javascript_form_google *thems_libraries
+  def include_javascript_from_google *thems_libraries
     thems_libraries.collect do |which|
       javascript_include_tag( 'http://ajax.googleapis.com/ajax/libs/' +
         case which
           when :jquery    : 'jquery/1.3.2/jquery.min.js'
           when :jqueryui  : 'jqueryui/1.7.2/jquery-ui.min.js'
-          else : raise ArgumentError, "I dont know about #{which}"
+          else raise ArgumentError, "I dont know about #{which}"
         end
       )
     end
