@@ -96,7 +96,7 @@ puts "copying basic templates"
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
 		run 'rm app/views/layouts/admin.html.erb' unless options[:admin]
-		run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
+    run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
 		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
 	end
