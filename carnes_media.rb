@@ -14,7 +14,7 @@ end
 
 def setup_960gs
 	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
-	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/960.css > app/stylesheets/vendor/_960.less'
+	run 'curl -L http://github.com/nathancarnes/960.less/raw/master/960.less > app/stylesheets/vendor/_960.less'
 	add_stylesheets_to_application 'vendor/_reset', 'vendor/_960'
 end
 
@@ -218,6 +218,9 @@ puts "setting up javascripts and stylesheets"
 			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/vendor/_spreadhead.less'
 			add_stylesheets_to_application 'vendor/_spreadhead'
 		end
+		
+		append_file 'app/stylesheets/application.less', ".js .js-hide{ display: none; }"
+  	
 	end
 
 	git :add => '.'

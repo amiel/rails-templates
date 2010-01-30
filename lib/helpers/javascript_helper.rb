@@ -1,6 +1,5 @@
 module JavascriptHelper
 
-
   def js_vars_with_scope(scope)
     @_js_var_scope = scope
     yield
@@ -15,15 +14,14 @@ module JavascriptHelper
     js_var :I18n, I18n.backend.send(:translations)[I18n.locale.to_sym][:js]
   end
 
-  def include_javascript_from_google *thems_libraries
-    thems_libraries.collect do |which|
-      javascript_include_tag( 'http://ajax.googleapis.com/ajax/libs/' +
-        case which
-          when :jquery    : 'jquery/1.3.2/jquery.min.js'
-          when :jqueryui  : 'jqueryui/1.7.2/jquery-ui.min.js'
-          else raise ArgumentError, "I dont know about #{which}"
-        end
-      )
-    end
+  def include_javascript_from_cdn *thems_libraries
+    google_prefix = 'http://ajax.googleapis.com/ajax/libs/'
+    libs = {
+      :jquery    => google_prefix + 'jquery/1.3.2/jquery.min.js',
+      :jqueryui  => google_prefix + 'jqueryui/1.7.2/jquery-ui.min.js',
+      :jqtools   => 'http://cdn.jquerytools.org/1.1.2/jquery.tools.min.js',
+    }
+    
+    javascript_include_tag( *thems_libraries.collect{|which| libs[which] or raise ArgumentError, "I dont know about #{which}" } )
   end
 end
