@@ -215,7 +215,7 @@ puts "setting up javascripts and stylesheets"
 		end
 		
 		if options[:spreadhead] then
-			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.css > app/stylesheets/vendor/_spreadhead.less'
+			run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/spreadhead.less > app/stylesheets/vendor/_spreadhead.less'
 			add_stylesheets_to_application 'vendor/_spreadhead'
 		end
 		
@@ -334,7 +334,8 @@ end
 		
 		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : 'true'
 		gsub_file 'config/initializers/spreadhead.rb', /controller\.send\(:head, 403\)/, spreadhead_filter
-		
+		gsub_file 'config/initializers/spreadhead.rb', /^end/, "  PagesController.layout 'admin'\nend"
+    
 		msg << "* spreadhead setup"
 	end
 
