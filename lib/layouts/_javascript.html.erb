@@ -1,4 +1,4 @@
-<%= include_javascript_from_google :jquery %>
+<%= include_javascript_from_cdn :jquery %>
 <%= javascript_include_tag 'base', 'application' %>
 
 <% js_var :DEBUG, !Rails.env.production? %>
@@ -6,11 +6,11 @@
 
 <%= yield :javascript %>
 
-<%- if @content_for_dom_ready or @content_for_in_javascript -%>
+<%- in_javascript = yield :in_javascript -%>
+<%- if in_javascript then -%>
 	<script type="text/javascript">
 	//<![CDATA[
-		$(function() { <%= yield :dom_ready %> });
-		<%= yield :in_javascript %>
+		<%= in_javascript %>
 	//]]>
 	</script>
 <% end %>
