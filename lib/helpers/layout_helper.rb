@@ -4,12 +4,12 @@ module LayoutHelper
     "#{controller.controller_name} #{controller.controller_name}-#{controller.action_name}"
   end
   
-	def render_title
+	def render_title(section = :site_name)
 		title = @_title || @content_for_title
 		if title then
-			"#{title} - #{t('site_name')}"
+			"#{title} - #{t(section)}"
 		else
-			"#{t('site_name')} - #{t('slogan')}"
+			"#{t(section)} - #{t(:slogan)}"
 		end
 	end
 	
