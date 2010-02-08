@@ -12,10 +12,16 @@ def add_stylesheets_to_application(*stylesheets)
 	end
 end
 
-def setup_960gs
+def setup_960gs(grid_unit_input)
+  grid_unit = case grid_unit_input
+  when /16/: '16'
+  when /24/: '24'
+  else : '12'
+  end
+  
 	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
-	run 'curl -L http://github.com/nathancarnes/960.less/raw/master/960.less > app/stylesheets/vendor/_960.less'
-	add_stylesheets_to_application 'vendor/_reset', 'vendor/_960'
+	run "curl -L http://github.com/nathancarnes/960.less/raw/master/960_#{grid_unit}.less > app/stylesheets/vendor/_960_#{grid_unit}.less"
+	add_stylesheets_to_application 'vendor/_reset', "vendor/_960_#{grid_unit}"
 end
 
 def setup_resetcss
@@ -34,6 +40,8 @@ puts 'ok, some questions before we get started'
 	options = {}
 
 	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sen, reset', 'reset')
+	options[:css_960_grid_unit] = ask_with_default('What grid unit would you like for 960? options are 12, 16, and 24', '12') if options[:css_framework][/960/]
+	
 	options[:first_controller_name] = ask_with_default('What would you like to call your first controller?', 'home')
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
@@ -204,8 +212,8 @@ puts "setting up javascripts and stylesheets"
 
 		case options[:css_framework]
 		when /960/
-			setup_960gs
-			msg << "* 960gs"
+			setup_960gs(options[:css_960_grid_unit])
+			msg << "* 960gs #{options[:css_960_grid_unit]}"
 		when /sen/
 			setup_sencss
 			msg << "* sencss"
