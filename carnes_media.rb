@@ -46,7 +46,7 @@ puts 'ok, some questions before we get started'
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
-	if ['nathan', 'amiel'].include? ENV['USER'] then # sorry, but this repos is private
+	if ['nathan', 'amiel', 'nathancarnes'].include? ENV['USER'] then # sorry, but this repos is private
   	options[:admin] = yes?('Would you like the slick admin engine setup? (this will auto include sprockets, formtastic, spreadhead)')
 	end
 	
@@ -105,6 +105,7 @@ puts "copying basic templates"
 		run 'cp rails-templates/lib/helpers/* app/helpers'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
+		run 'cp rails-templates/lib/Capfile .' if options[:heroku]
     run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
 		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
@@ -295,6 +296,7 @@ puts "other misc changes"
 	generate :controller, options[:first_controller_name], 'index'
 	route "map.root :controller => '#{options[:first_controller_name]}'"
 	msg << "* first controller #{options[:first_controller_name]}"
+
 	
 	time_zone = `rake time:zones:local|grep '\* UTC' -A 1|tail -1`.chomp
 	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 '#{time_zone}'"
@@ -365,6 +367,9 @@ end
     
     msg << '* allow only the first user to create an account'
   end
+
+
+    gsub_file 'app/controllers/application_controller.rb', /^end/, "layout :no_layout_for_xhr\n\n  private\n  def no_layout_for_xhr\n    request.xhr? ? nil : 'application'\n  end\nend\n"
 
 
   if options[:authlogic] || options[:admin] then
