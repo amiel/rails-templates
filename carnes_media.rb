@@ -46,7 +46,7 @@ puts 'ok, some questions before we get started'
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
-	if ['nathan', 'amiel', 'nathancarnes'].include? ENV['USER'] then # sorry, but this repos is private
+	if ['nathan', 'amiel', 'nathancarnes'].include?(ENV['USER']) || ENV['CMADMIN'] then # sorry, but this repos is private
   	options[:admin] = yes?('Would you like the slick admin engine setup? (this will auto include sprockets, formtastic, spreadhead)')
 	end
 	
