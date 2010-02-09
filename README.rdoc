@@ -16,8 +16,7 @@ So far, I'm still working on the "base" template, which contains:
 
 and will ask you if you want:
 
-* your option of reset.css, sens.css, or 960gs
-* jQuery tools (TODO)
+* your option of reset.css, sens.css, or 960gs (for less, with 12, 16, or 24 grid base options)
 * a form builder (formtastic)
 * paperclip
 * sprockets and sprockets-rails (my version of sprockets-rails http://github.com/amiel/sprockets-rails)
@@ -47,11 +46,9 @@ TODO: explain these things
 
 == TODO
 * instructions at end of template
-* jQuery tools
-* other handy jquery plugins (facebox? )
+* other handy jquery plugins (Boxy? )
 * write more info on features in this doc
 
-* no layout for xhr
 * more for heroku
 * heroku capistrano tasks and asset packing for deploy (http://casperfabricius.com/site/2009/09/20/manage-and-rollback-heroku-deployments-capistrano-style/)
 ** concept is in Capfile and compiled_assets.rake, need to cleanup, etc

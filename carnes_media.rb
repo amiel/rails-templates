@@ -356,7 +356,7 @@ end
 	      'true'
       end
 		gsub_file 'config/initializers/spreadhead.rb', /controller\.send\(:head, 403\)/, spreadhead_filter
-		gsub_file 'config/initializers/spreadhead.rb', /^end/, "  PagesController.layout 'cm_admin'\nend" if options[:admin]
+		gsub_file 'config/initializers/spreadhead.rb', /^end/, "  PagesController.send :include, CMAdmin::Controller\nend" if options[:admin]
     
 		msg << "* spreadhead setup"
 	end
