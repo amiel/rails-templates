@@ -369,7 +369,7 @@ end
   end
 
 
-    gsub_file 'app/controllers/application_controller.rb', /^end/, "layout :no_layout_for_xhr\n\n  private\n  def no_layout_for_xhr\n    request.xhr? ? nil : 'application'\n  end\nend\n"
+    gsub_file 'app/controllers/application_controller.rb', /^end/, "\n  layout :no_layout_for_xhr\n  private\n  def no_layout_for_xhr\n    request.xhr? ? nil : 'application'\n  end\nend\n"
 
 
   if options[:authlogic] || options[:admin] then
