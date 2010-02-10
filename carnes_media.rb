@@ -81,6 +81,7 @@ tmp/**/*
 db/*.sqlite3
 public/system
 public/stylesheets
+*.css
 		GITIGNORE
 	end
 	
