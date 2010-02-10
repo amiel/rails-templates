@@ -104,6 +104,7 @@ puts "copying basic templates"
 		run 'git clone git://github.com/amiel/rails-templates.git'
 		run 'cp rails-templates/lib/helpers/* app/helpers'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
+		run "mv #{JS_PATH}/lib/DD_belatedPNG* #{JS_PATH}"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
 		run 'cp rails-templates/lib/Capfile .' if options[:heroku]
     run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
