@@ -1,0 +1,16 @@
+# production config below
+development: &local
+  email:
+    from: amiel@carnesmedia.com
+    to: amiel@carnesmedia.com
+  
+
+
+test:
+  <<: *local
+
+cucumber:
+  <<: *local
+  
+production:
+  <<: *local
