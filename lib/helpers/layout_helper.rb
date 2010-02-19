@@ -13,8 +13,12 @@ module LayoutHelper
 		end
 	end
 	
-	def title(str)
+	# examples:
+	#   <% title 'foobar' %> # => set the <title> to 'foobar'
+	#   <%= title %> # => set the <title> from I18n and output an <h1> with the same string
+	def title(str = t(:'.title'))
 	  @_title = str
+	  content_tag :h1, str
 	end
 	
 

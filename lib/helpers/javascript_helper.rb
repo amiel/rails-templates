@@ -17,8 +17,7 @@ module JavascriptHelper
   def include_javascript_from_cdn *thems_libraries
     google_prefix = 'http://ajax.googleapis.com/ajax/libs/'
     libs = {
-      :jquery    => google_prefix + 'jquery/1.3.2/jquery.min.js',
-      :jqueryui  => google_prefix + 'jqueryui/1.7.2/jquery-ui.min.js',
+      :jquery    => google_prefix + 'jquery/1.4.1/jquery.min.js',
       :jqtools   => 'http://cdn.jquerytools.org/1.1.2/jquery.tools.min.js',
     }
     

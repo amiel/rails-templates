@@ -12,10 +12,16 @@ def add_stylesheets_to_application(*stylesheets)
 	end
 end
 
-def setup_960gs
+def setup_960gs(grid_unit_input)
+  grid_unit = case grid_unit_input
+  when /16/: '16'
+  when /24/: '24'
+  else '12'
+  end
+  
 	run 'curl -L http://github.com/davemerwin/960-grid-system/raw/master/code/css/reset.css > app/stylesheets/vendor/_reset.less'
-	run 'curl -L http://github.com/nathancarnes/960.less/raw/master/960.less > app/stylesheets/vendor/_960.less'
-	add_stylesheets_to_application 'vendor/_reset', 'vendor/_960'
+	run "curl -L http://github.com/nathancarnes/960.less/raw/master/960_#{grid_unit}.less > app/stylesheets/vendor/_960_#{grid_unit}.less"
+	add_stylesheets_to_application 'vendor/_reset', "vendor/_960_#{grid_unit}"
 end
 
 def setup_resetcss
@@ -25,7 +31,7 @@ end
 
 def setup_sencss
 	run 'curl -L http://sencss.googlecode.com/files/sen.0.6.min.css > app/stylesheets/vendor/_sen.less'
-	gsub_file 'app/stylesheets/vendor/_sen.less', /@charset "utf-8";\s*/, ''
+	gsub_file 'app/stylesheets/vendor/_sen.less', /@charset "utf-8";\s*/, '' # this fucks up less
 	add_stylesheets_to_application 'vendor/_sen'
 end
 
@@ -34,11 +40,15 @@ puts 'ok, some questions before we get started'
 	options = {}
 
 	options[:css_framework] = ask_with_default('What CSS framework would you like to start with? options are 960gs, sen, reset', 'reset')
+	options[:css_960_grid_unit] = ask_with_default('What grid unit would you like for 960? options are 12, 16, and 24', '12') if options[:css_framework][/960/]
+	
 	options[:first_controller_name] = ask_with_default('What would you like to call your first controller?', 'home')
 	
 	# options[:jqtools] = yes?('would you like jQuery tools?')
 	
-	options[:admin] = yes?('Would you like the slick admin interface setup? (this will include sprockets, formtastic, spreadhead and authlogic)')
+	if ['nathan', 'amiel', 'nathancarnes'].include?(ENV['USER']) || ENV['CMADMIN'] then # sorry, but this repos is private
+  	options[:admin] = yes?('Would you like the slick admin engine setup? (this will auto include sprockets, formtastic, spreadhead)')
+	end
 	
 	options[:sprockets] = options[:admin] || yes?('Would you like sprockets?')
 	JS_PATH = options[:sprockets] ? 'app/javascripts' : 'public/javascripts'
@@ -49,7 +59,7 @@ puts 'ok, some questions before we get started'
 	options[:capistrano] = options[:heroku] ? false : yes?('Will you be deploying with capistrano?')
 	
 	options[:spreadhead] = options[:admin] || yes?('Would you like spreadhead for basic content management?')
-	options[:authlogic] = options[:admin] || yes?('Would you like authlogic setup for authentication?')
+	options[:authlogic] = yes?('Would you like authlogic setup for user authentication?')
 	options[:paperclip] = yes?('Would you like paperclip?')
 	options[:hoptoad] = yes?('would you like the hoptoad notifier?')
 	options[:hoptoad_api_key] = ask('please enter your hoptoad api key (ok to leave blank)') if options[:hoptoad]
@@ -71,6 +81,7 @@ tmp/**/*
 db/*.sqlite3
 public/system
 public/stylesheets
+*.css
 		GITIGNORE
 	end
 	
@@ -94,8 +105,9 @@ puts "copying basic templates"
 		run 'git clone git://github.com/amiel/rails-templates.git'
 		run 'cp rails-templates/lib/helpers/* app/helpers'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
+		run "mv #{JS_PATH}/lib/DD_belatedPNG* #{JS_PATH}"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
-		run 'rm app/views/layouts/admin.html.erb' unless options[:admin]
+		run 'cp rails-templates/lib/Capfile .' if options[:heroku]
     run 'rm app/views/layouts/login.html.erb' unless options[:authlogic]
 		run 'cp rails-templates/README.rdoc TEMPLATE_README.rdoc'
 		run 'rm -rf rails-templates'
@@ -129,13 +141,21 @@ puts "setting up gems"
 	  msg << "* paperclip"
   end
 
-	if options[:authlogic] then
+	if options[:authlogic] || options[:admin] then
 	  gems << 'authlogic'
 		gem 'authlogic'
-		plugin 'authlogic_generator', :git => 'git://github.com/masone/authlogic_generator.git'
-		
-		msg << "* authlogic and authlogic_generator"
+		msg << "* authlogic"
 	end
+	
+	if options[:authlogic] then
+  	plugin 'authlogic_generator', :git => 'git://github.com/amiel/authlogic_generator.git'
+  	msg << "* authlogic_generator"
+  end
+	
+	if options[:admin] then
+	  plugin 'CMAdmin', :git => 'git@github.com:nathancarnes/CMAdmin.git'
+	  msg << "* CMAdmin"
+  end
 	
 	if options[:formtastic] then
 	  gems << 'justinfrench-formtastic --source=http://gems.github.com'
@@ -191,7 +211,7 @@ puts "setting up javascripts and stylesheets"
 		run "mkdir #{JS_PATH}/vendor"
 		run "mkdir -p app/stylesheets/vendor"
 
-		run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > public/javascripts/jquery.js" # for local
+		run "curl -L http://code.jquery.com/jquery-1.4.1.js > public/javascripts/jquery.js" # for local
 
 		if options[:sprockets] then
 			file 'app/javascripts/application.js', "//= require <base>\n"
@@ -204,8 +224,8 @@ puts "setting up javascripts and stylesheets"
 
 		case options[:css_framework]
 		when /960/
-			setup_960gs
-			msg << "* 960gs"
+			setup_960gs(options[:css_960_grid_unit])
+			msg << "* 960gs #{options[:css_960_grid_unit]}"
 		when /sen/
 			setup_sencss
 			msg << "* sencss"
@@ -219,7 +239,7 @@ puts "setting up javascripts and stylesheets"
 			add_stylesheets_to_application 'vendor/_spreadhead'
 		end
 		
-		append_file 'app/stylesheets/application.less', ".js .js-hide{ display: none; }"
+		append_file 'app/stylesheets/application.less', ".js .js-hide{ display: none; }\n"
   	
 	end
 
@@ -278,6 +298,7 @@ puts "other misc changes"
 	generate :controller, options[:first_controller_name], 'index'
 	route "map.root :controller => '#{options[:first_controller_name]}'"
 	msg << "* first controller #{options[:first_controller_name]}"
+
 	
 	time_zone = `rake time:zones:local|grep '\* UTC' -A 1|tail -1`.chomp
 	gsub_file 'config/environment.rb', /(config.time_zone =) 'UTC'/, "\\1 '#{time_zone}'"
@@ -289,13 +310,10 @@ puts "other misc changes"
 	gsub_file 'config/locales/en.yml', /(\s+)hello:.*/, "\\1site_name: #{app_name.titleize}\\1slogan: One awesomely cool site"
 	msg << "* a couple of i18n strings that are used in application_helper"
 
-  if options[:admin] then
-    gsub_file 'app/views/layouts/_javascript.html.erb', /(google :jquery)/, '\\1, :jqueryui'
-    msg << '* foo'
-  end
 
 	if options[:sprockets] then
 		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag ).*,( 'application')/, "sprockets\\1\\2"
+		gsub_file 'app/views/layouts/_javascript.html.erb', /javascript(_include_tag )('DD.*js')/, "sprockets\\1\\2"
 		gsub_file 'app/helpers/layout_helper.rb', /javascript(_include_tag)/, "sprockets\\1"
 		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/vendor"
 		gsub_file 'config/sprockets.yml', /(\s+)(- app\/javascripts)$/, "\\1\\2\\1- app/javascripts/lib"
@@ -332,9 +350,16 @@ end
 		generate :spreadhead
 		file "app/views/#{options[:first_controller_name]}/index.html.erb", '<%= spreadhead "home" %>'
 		
-		spreadhead_filter = options[:authlogic] ? "controller.send(:redirect_to, '/') unless controller.send(:current_user)" : 'true'
+		
+		spreadhead_filter = if options[:admin] then
+  		  "controller.send(:redirect_to, '/') unless controller.send(:current_admin)"
+      elsif options[:authlogic] then
+        "controller.send(:redirect_to, '/') unless controller.send(:current_user)"
+	    else
+	      'true'
+      end
 		gsub_file 'config/initializers/spreadhead.rb', /controller\.send\(:head, 403\)/, spreadhead_filter
-		gsub_file 'config/initializers/spreadhead.rb', /^end/, "  PagesController.layout 'admin'\nend"
+    # gsub_file 'config/initializers/spreadhead.rb', /^end/, "  PagesController.send :include, AuthenticationHandling\nend" if options[:authlogic] and not options[:admin]
     
 		msg << "* spreadhead setup"
 	end
@@ -344,18 +369,25 @@ end
     gsub_file 'app/controllers/users_controller.rb', /^end/, "  private\n  def allow_only_first_user\n    User.first ? require_user : require_no_user\n  end\nend"
     
     msg << '* allow only the first user to create an account'
-    
-    gsub_file 'app/controllers/application_controller.rb', /# filter_parameter_logging :password/, 'filter_parameter_logging :password, :password_confirmation'
-    msg << '* filter parameter logging for authlogic'
   end
 
 
+    gsub_file 'app/controllers/application_controller.rb', /^end/, "\n  layout :no_layout_for_xhr\n  private\n  def no_layout_for_xhr\n    request.xhr? ? nil : 'application'\n  end\nend\n"
+
+
+  if options[:authlogic] || options[:admin] then
+    gsub_file 'app/controllers/application_controller.rb', /# filter_parameter_logging :password/, 'filter_parameter_logging :password, :password_confirmation'
+    
+    msg << '* filter parameter logging for authlogic'
+  end
+
+  if options[:admin] then
+    rake :'cmadmin:sync'
+    msg << '* cmadmin files that need to be synced'
+  end
 
 	git :add => '.'
 	git :commit => "-m'#{msg.join("\n")}'"
-
-
-
 
 
 puts "\n\n\n"
@@ -367,7 +399,7 @@ if yes?('would you like to run migrations right now?') then
 		# it may be bad style to put db stuff here in the template, but it does help get a working app up quick.
 		
 		in_root do
-			home_page_text = %{%Q{h1. Home page\\n\\nHere be the home page, go to "/pages":/pages to edit it.\\n\\n#{'You may need to "Sign Up":/signup for an account first.' if options[:authlogic]}}}
+			home_page_text = %{%Q{h1. Home page\\n\\nHere be the home page, go to "/pages":/pages to edit it.\\n\\n#{'You may need to "Sign Up":/admin/signup for an account first.' if options[:admin]}}}
 			run %{./script/runner 'Page.create :title => "Home", :published => true, :text => #{home_page_text}, :formatting => "textile"'}
 		end
 	end
