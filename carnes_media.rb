@@ -166,7 +166,7 @@ puts "setting up gems"
 	end
 
 	# these plugins make rake gems:install fail if their corresponding gem is not already installed
-	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
+	plugin 'less_on_rails', :git => 'git://github.com/amiel/more.git'
 	plugin 'sprockets-rails', :git => 'git://github.com/amiel/sprockets-rails.git' if options[:sprockets]
 	msg << "* more (less plugin for rails)\n"
 	
