@@ -104,6 +104,7 @@ puts "copying basic templates"
 	in_root do
 		run 'git clone git://github.com/amiel/rails-templates.git'
 		run 'cp rails-templates/lib/helpers/* app/helpers'
+		run 'cp rails-templates/lib/stylesheets/_*.less app/stylesheets'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run "mv #{JS_PATH}/lib/DD_belatedPNG* #{JS_PATH}"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
@@ -239,8 +240,7 @@ puts "setting up javascripts and stylesheets"
 			add_stylesheets_to_application 'vendor/_spreadhead'
 		end
 		
-		append_file 'app/stylesheets/application.less', ".js .js-hide{ display: none; }\n"
-  	
+    run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/application.less >> app/stylesheets/application.less'
 	end
 
 	git :add => '.'
