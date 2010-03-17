@@ -159,8 +159,8 @@ puts "setting up gems"
   end
 	
 	if options[:formtastic] then
-	  gems << 'justinfrench-formtastic --source=http://gems.github.com'
-		gem "justinfrench-formtastic", :lib => 'formtastic', :source => 'http://gems.github.com'
+	  gems << 'formtastic'
+		gem "formtastic"
 		plugin 'validation_reflection', :git => 'git://github.com/redinger/validation_reflection.git'
 		
 		msg << "* formtastic and validation_reflection"
@@ -173,8 +173,8 @@ puts "setting up gems"
 	end
 	
 	if options[:spreadhead] then
-	  gems << 'jeffrafter-spreadhead --source=http://gems.github.com'
-		gem "jeffrafter-spreadhead", :lib => 'spreadhead', :source => 'http://gems.github.com'
+	  gems << 'spreadhead'
+		gem "spreadhead"
 		
 		msg << "* spreadhead"
 	end
