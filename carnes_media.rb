@@ -131,7 +131,8 @@ puts "setting up gems"
 
 
 	if options[:hoptoad] then
-		plugin 'hoptoad_notifier', :git => 'git://github.com/thoughtbot/hoptoad_notifier.git'
+		gems << 'hoptoad_notifier'
+		gem 'hoptoad_notifier'
 		msg << "* hoptoad notifier"
 	end
 	
