@@ -104,6 +104,7 @@ puts "copying basic templates"
 	in_root do
 		run 'git clone git://github.com/amiel/rails-templates.git'
 		run 'cp rails-templates/lib/helpers/* app/helpers'
+		run 'cp rails-templates/lib/stylesheets/_*.less app/stylesheets'
 		run "cp rails-templates/lib/javascripts/* #{JS_PATH}/lib"
 		run "mv #{JS_PATH}/lib/DD_belatedPNG* #{JS_PATH}"
 		run 'cp rails-templates/lib/layouts/* app/views/layouts'
@@ -159,8 +160,8 @@ puts "setting up gems"
   end
 	
 	if options[:formtastic] then
-	  gems << 'justinfrench-formtastic --source=http://gems.github.com'
-		gem "justinfrench-formtastic", :lib => 'formtastic', :source => 'http://gems.github.com'
+	  gems << 'formtastic'
+		gem "formtastic"
 		plugin 'validation_reflection', :git => 'git://github.com/redinger/validation_reflection.git'
 		
 		msg << "* formtastic and validation_reflection"
@@ -173,8 +174,8 @@ puts "setting up gems"
 	end
 	
 	if options[:spreadhead] then
-	  gems << 'jeffrafter-spreadhead --source=http://gems.github.com'
-		gem "jeffrafter-spreadhead", :lib => 'spreadhead', :source => 'http://gems.github.com'
+	  gems << 'spreadhead'
+		gem "spreadhead"
 		
 		msg << "* spreadhead"
 	end
@@ -187,7 +188,7 @@ puts "setting up gems"
 	end
 
 	# these plugins make rake gems:install fail if their corresponding gem is not already installed
-	plugin 'less_on_rails', :git => 'git://github.com/cloudhead/more.git'
+	plugin 'less_on_rails', :git => 'git://github.com/amiel/more.git'
 	plugin 'sprockets-rails', :git => 'git://github.com/amiel/sprockets-rails.git' if options[:sprockets]
 	msg << "* more (less plugin for rails)\n"
 	
@@ -240,8 +241,7 @@ puts "setting up javascripts and stylesheets"
 			add_stylesheets_to_application 'vendor/_spreadhead'
 		end
 		
-		append_file 'app/stylesheets/application.less', ".js .js-hide{ display: none; }\n"
-  	
+    run 'curl -L http://github.com/amiel/rails-templates/raw/master/lib/stylesheets/application.less >> app/stylesheets/application.less'
 	end
 
 	git :add => '.'

@@ -26,7 +26,22 @@
 
 	<%= render 'layouts/flashes' %>
 
-	<%= yield %>
+	<div id="header">
+		<div class="container">
+			<h1><%= link_to t(:'site_name'), root_path %></h1>
+		</div>
+	</div>
+	
+	<div id="main">
+		<%= render 'layouts/flashes' %>
+		<%= yield %>
+	</div>
+	
+	<div id="footer">
+		<div class="container">
+		</div>
+	</div>
+	
 	<%= render 'layouts/javascript' %>
 	<%= render 'layouts/analytics' %>
 </body>
